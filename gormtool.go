@@ -41,6 +41,8 @@ const (
 	JSONNSUNDER  JSONNSTYPE = "under"
 )
 
+const VERSION = "gormtool@20240614"
+
 // CmdParams is command line parameters
 type CmdParams struct {
 	DSN                 string   `yaml:"dsn"`                 // consult[https://gorm.io/docs/connecting_to_the_database.html]"
@@ -159,10 +161,13 @@ func parseCmdFromYaml(path string) *CmdParams {
 	return yamlConfig.Database
 }
 
+var version = flag.Bool("v", false, "version of gormtool")
+
 // argParse is parser for cmd
 func argParse() *CmdParams {
 	// choose is file or flag
 	genPath := flag.String("c", "", "is path for gen.yml")
+
 	dsn := flag.String("dsn", "", "consult[https://gorm.io/docs/connecting_to_the_database.html]")
 	db := flag.String("db", string(dbMySQL), "input mysql|postgres|sqlite|sqlserver|clickhouse. consult[https://gorm.io/docs/connecting_to_the_database.html]")
 	tableList := flag.String("tables", "", "enter the required data table or leave it blank")
@@ -184,7 +189,6 @@ func argParse() *CmdParams {
 	if *genPath != "" { //use yml config
 		return parseCmdFromYaml(*genPath)
 	}
-
 	var cmdParse CmdParams
 	// cmd first
 	if *dsn != "" {
@@ -227,9 +231,9 @@ func argParse() *CmdParams {
 		cmdParse.FieldSignable = *fieldSignable
 	}
 	cmdParse.JsonTagNameStrategy = *jsonTagNameStrategy
-	if *singularTable {
-		cmdParse.SingularTable = *singularTable
-	}
+
+	cmdParse.SingularTable = *singularTable
+
 	if *tablePrefix != "" {
 		cmdParse.TablePrefix = *tablePrefix
 	}
@@ -256,6 +260,10 @@ func main() {
 		log.Fatalln("parse config fail")
 	}
 
+	if *version {
+		log.Println(VERSION)
+		return
+	}
 	db, err := connectDB(DBType(config.DB), config.DSN, schema.NamingStrategy{
 		TablePrefix:   config.TablePrefix,
 		SingularTable: config.SingularTable,
@@ -276,6 +284,13 @@ func main() {
 		FieldSignable:     config.FieldSignable,
 	})
 
+	// g.WithTableNameStrategy(func(tableName string) (targetTableName string) {
+	// 	if config.SingularTable {
+	// 		return tableName
+	// 	} else {
+	// 		return tableName
+	// 	}
+	// })
 	g.WithJSONTagNameStrategy(func(columnName string) (tagContent string) {
 		if config.JsonTagNameStrategy == string(JSONNSCAMEL) {
 			// test_z3
@@ -289,7 +304,7 @@ func main() {
 			}
 
 			return strings.Join(arr, "")
-		} else if config.JsonTagNameStrategy == string(JSONNSUNDER) {
+		} else if config.JsonTagNameStrategy == string(JSONNSPASCAL) {
 			arr := strings.Split(columnName, "_")
 			for i, v := range arr {
 				arr[i] = FirstUpper(v)
