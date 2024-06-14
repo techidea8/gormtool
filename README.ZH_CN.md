@@ -1,13 +1,13 @@
 # GenTool
 
-将Gen作为二进制的方式进行安装
+将GORMtOOL作为二进制的方式进行安装
 
 
 
 ## 安装
 
 ```shell
- go install gorm.io/gen/tools/gentool@latest
+ go install github.com/techidea8/gormtool@latest
 ```
 
 ## 使用方式

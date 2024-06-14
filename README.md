@@ -1,11 +1,11 @@
 # GormTool
 
-Install GEN as a binary tool
+Install GORM TOOL as a binary tool
 
 ## install
 
 ```shell
- go install gorm.io/gen/tools/gentool@latest
+ go install github.com/techidea8/gormtool@latest
 ```
 
 ## usage
